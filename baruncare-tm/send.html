@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>바른케어플러스 TM · 알림톡전송</title>
+
+<style>
+  @font-face { font-family:'Pretendard'; font-weight:400; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-Regular.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:500; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-Medium.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:600; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-SemiBold.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:700; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-Bold.woff2') format('woff2'); }
+</style>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Pretendard','"Apple SD Gothic Neo"','system-ui','sans-serif'] },
+        colors: {
+          primary: { DEFAULT:'#FF8A65', hover:'#F47551', press:'#E36544', bg:'#FFF1EB' },
+          page: '#F8F9FA',
+          ink: { primary:'#333333', secondary:'#666666', tertiary:'#999999', placeholder:'#AAAAAA' },
+          line: '#E5E7EB',
+          divider: '#EEEEEE',
+          field: '#F1F2F4',
+        },
+        maxWidth: { page: '1200px' },
+      },
+    },
+  };
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body {
+    font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+    background: #FFFFFF;
+    color: #333333;
+    font-size: 16px;            /* 본문 */
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+  button { font-family: inherit; font-size: inherit; cursor: pointer; }
+  input { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+</style>
+
+<!-- Tailwind이 처리하는 base layer: preflight 뒤에 적용되어야 우선됨 -->
+<style type="text/tailwindcss">
+  @layer base {
+    /* Type scale: 24 / 18 / 16 / 14 */
+    h1 { font-size: 24px; font-weight: 700; line-height: 1.3; margin: 0; }   /* 제목1 */
+    h2 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 0; }   /* 제목2 */
+  }
+</style>
+</head>
+<body class="font-sans">
+
+<div class="min-h-screen flex flex-col bg-white">
+
+  <!-- Header -->
+  <header class="w-full bg-white border-b border-divider">
+    <div class="max-w-page mx-auto h-[72px] px-6 flex items-center justify-between">
+      <a href="./send.html" aria-label="바른케어플러스 홈">
+        <img src="./assets/바른케어플러스.png" alt="바른케어플러스" class="h-7 w-auto" />
+      </a>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#EEEEEE] text-[14px] font-semibold text-ink-primary">홍</span>
+          <span class="text-[14px] text-ink-primary"><strong class="font-semibold">홍길동</strong> <span class="font-normal text-ink-secondary">님</span></span>
+        </div>
+        <a href="./index.html" class="h-9 px-4 inline-flex items-center rounded-[8px] border border-line text-[14px] text-ink-primary bg-white hover:bg-page transition-colors">로그아웃</a>
+      </div>
+    </div>
+
+    <!-- Sub Nav -->
+    <nav class="border-t border-divider">
+      <ul class="max-w-page mx-auto h-12 px-6 flex items-center justify-center gap-10">
+        <li><a href="./send.html" class="inline-flex items-center h-12 text-[16px] font-semibold text-ink-primary">알림톡전송</a></li>
+        <li><a href="./history.html" class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">전송내역</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 w-full">
+    <div class="max-w-page mx-auto px-6 py-10">
+
+      <!--
+        ▼ 카드 박스
+        - max-w-[640px]: 카드 최대 너비
+        - px-[40px] py-[56px]: 카드 안쪽 좌우/상하 패딩
+        - rounded-[8px]: 모서리 둥근 정도
+      -->
+      <section class="max-w-[640px] mx-auto bg-white border border-divider rounded-[8px] px-[40px] py-[80px]">
+
+        <!-- ▼ 제목 영역 (mb-[32px]: 제목 영역 ↔ 폼 사이 간격) -->
+        <header class="text-center mb-[52px]">
+          <h1 class="text-ink-primary">알림톡전송</h1>
+          <!-- mt-[8px]: 타이틀 ↔ 부제 사이 간격 -->
+          <p class="mt-[10px] text-[16px] text-ink-secondary">고객님에게 알림톡으로 신청사이트 링크를 전송합니다.</p>
+        </header>
+
+        <!--
+          ▼ 폼
+          - max-w-[440px]: 입력 필드/버튼이 들어가는 폭
+          - gap-[20px]: 행(라벨+인풋 묶음) 간 세로 간격
+        -->
+        <form id="sendForm" class="flex flex-col gap-[20px] mx-auto w-full max-w-[440px]" onsubmit="return onSendSubmit(event)">
+
+          <!-- ▼ 행 1: 고객 이름 -->
+          <div>
+            <!-- mb-[8px]: 라벨 ↔ 인풋 사이 간격 -->
+            <label for="custName" class="block mb-[8px] text-[14px] font-medium text-ink-secondary">고객 이름</label>
+            <!-- h-[48px]: 인풋 높이 / px-[16px]: 인풋 좌우 패딩 / rounded-[8px]: 모서리 -->
+            <div class="flex items-center h-[48px] rounded-[8px] bg-white border border-line focus-within:border-primary px-[16px] transition-colors">
+              <input id="custName" type="text" value="홍길동" placeholder="고객 이름"
+                     class="w-full h-full bg-transparent outline-none text-[16px] text-ink-primary placeholder:text-ink-placeholder" />
+            </div>
+          </div>
+
+          <!-- ▼ 행 2: 고객 전화번호 -->
+          <div>
+            <label for="custPhone" class="block mb-[8px] text-[14px] font-medium text-ink-secondary">고객 전화번호</label>
+            <div class="flex items-center h-[48px] rounded-[8px] bg-white border border-line focus-within:border-primary px-[16px] transition-colors">
+              <input id="custPhone" type="text" inputmode="numeric" value="01012345678" placeholder="숫자만 입력"
+                     oninput="this.value = this.value.replace(/[^0-9]/g,'').slice(0,11)"
+                     class="w-full h-full bg-transparent outline-none text-[16px] text-ink-primary placeholder:text-ink-placeholder" />
+            </div>
+          </div>
+
+          <!--
+            ▼ 전송 버튼
+            - mt-[12px]: 위쪽(=마지막 인풋 행)과의 추가 여백 (gap-[20px] + mt-[12px] = 총 32px)
+            - h-[56px]: 버튼 높이 / rounded-[8px]: 모서리
+          -->
+          <button id="sendBtn" type="submit"
+                  class="mt-[12px] h-[56px] w-full rounded-[8px] bg-primary text-white text-[16px] font-semibold transition-colors hover:bg-primary-hover active:bg-primary-press disabled:bg-[#FFD3C2] disabled:cursor-not-allowed">
+            알림톡 전송하기
+          </button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-divider bg-white">
+    <div class="max-w-page mx-auto px-6 py-10 flex flex-col items-center gap-2">
+      <p class="text-[14px] text-ink-primary"><span class="font-semibold">Copyright</span> ⓒ 천호인터내셔널</p>
+      <p class="text-[14px] text-ink-tertiary">1644-0161(10:00~17:00) | cs@weplat.co.kr</p>
+    </div>
+  </footer>
+</div>
+
+<!--
+  ▼ 알림톡 전송 확인 모달
+  - 기본 hidden, 전송 버튼 클릭 시 표시
+  - 배경: bg-black/40 (40% 어둠)
+  - 카드: w-[400px] / px-[32px] py-[36px] / rounded-[8px]
+  - 강조 박스(전화번호): bg-primary-bg
+  - 버튼: 닫기(고스트) + 전송하기(오렌지)
+-->
+<div id="confirmModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4"
+     role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <!--
+    ▼ 카드 안쪽 여백 — 각 방향 독립 조절 가능
+    - pt-[56px]: 위쪽    (안내 문구 위)
+    - pr-[42px]: 오른쪽
+    - pb-[56px]: 아래쪽  (버튼 영역 아래)
+    - pl-[42px]: 왼쪽
+  -->
+  <div class="bg-white rounded-[8px] w-full max-w-[420px] pt-[56px] pr-[42px] pb-[56px] pl-[42px] shadow-card">
+
+    <!-- 안내 문구 -->
+    <p id="confirmTitle" class="text-center text-[16px] text-ink-primary leading-[1.6]">
+      <strong class="font-semibold"><span id="confirmName">홍길동</span> 님</strong>에게<br>
+      알림톡으로 링크를 전송합니다.
+    </p>
+
+    <!-- 전화번호 강조 박스 (mt-[20px] h-[64px]) -->
+    <div class="mt-[20px] h-[64px] flex items-center justify-center rounded-[8px] bg-primary-bg">
+      <span id="confirmPhone" class="text-[20px] font-bold text-primary tracking-[0.02em]">010-1234-5678</span>
+    </div>
+
+    <!-- 버튼 영역 (mt-[28px], 우측 정렬) -->
+    <div class="mt-[28px] flex items-center justify-end gap-[12px]">
+      <button id="confirmCancel" type="button"
+              class="h-[40px] px-[16px] text-[14px] font-medium text-ink-secondary hover:text-ink-primary transition-colors">
+        닫기
+      </button>
+      <button id="confirmOk" type="button"
+              class="h-[40px] px-[24px] rounded-[8px] bg-primary text-white text-[14px] font-semibold transition-colors hover:bg-primary-hover active:bg-primary-press">
+        전송하기
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $name  = document.getElementById('custName');
+  const $phone = document.getElementById('custPhone');
+  const $btn   = document.getElementById('sendBtn');
+
+  /* ============================================================
+     입력 검증: 이름 비었거나 전화번호 10자리 미만이면 버튼 비활성화
+     ============================================================ */
+  function refreshDisabled(){
+    $btn.disabled = !$name.value.trim() || $phone.value.length < 10;
+  }
+  $name.addEventListener('input', refreshDisabled);
+  $phone.addEventListener('input', refreshDisabled);
+  refreshDisabled();
+
+  /* ============================================================
+     전화번호 표시용 포맷터 (010-1234-5678)
+     ============================================================ */
+  function formatPhone(raw){
+    const d = (raw || '').replace(/\D/g,'');
+    if (d.length === 11) return `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`;
+    if (d.length === 10) return `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`;
+    return d;
+  }
+
+  /* ============================================================
+     확인 모달 제어
+     ============================================================ */
+  const $modal       = document.getElementById('confirmModal');
+  const $modalName   = document.getElementById('confirmName');
+  const $modalPhone  = document.getElementById('confirmPhone');
+  const $modalCancel = document.getElementById('confirmCancel');
+  const $modalOk     = document.getElementById('confirmOk');
+
+  function openModal(){
+    $modalName.textContent  = $name.value.trim();
+    $modalPhone.textContent = formatPhone($phone.value);
+    $modal.classList.remove('hidden');
+    $modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    // 기본 포커스: 전송하기 버튼
+    setTimeout(() => $modalOk.focus(), 0);
+  }
+  function closeModal(){
+    $modal.classList.add('hidden');
+    $modal.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  // 백드롭 클릭 → 닫기 (모달 카드 자체 클릭은 무시)
+  $modal.addEventListener('click', (e) => {
+    if (e.target === $modal) closeModal();
+  });
+  // ESC → 닫기
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$modal.classList.contains('hidden')) closeModal();
+  });
+  // 닫기 버튼
+  $modalCancel.addEventListener('click', closeModal);
+  // 전송하기 버튼 → 모달 닫고 결과 안내
+  $modalOk.addEventListener('click', () => {
+    closeModal();
+    alert(`${$name.value.trim()}(${formatPhone($phone.value)})님께 알림톡을 전송했습니다.`);
+  });
+
+  /* ============================================================
+     폼 submit → 모달 열기 (실제 전송은 모달의 "전송하기"에서)
+     ============================================================ */
+  function onSendSubmit(e){
+    e.preventDefault();
+    if ($btn.disabled) return false;
+    openModal();
+    return false;
+  }
+</script>
+
+</body>
+</html>

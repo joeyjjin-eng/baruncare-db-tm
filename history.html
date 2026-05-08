@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>바른케어플러스 TM · 전송내역</title>
+
+<style>
+  @font-face { font-family:'Pretendard'; font-weight:400; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-Regular.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:500; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-Medium.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:600; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-SemiBold.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:700; font-style:normal; font-display:swap;
+    src: url('./fonts/Pretendard-Bold.woff2') format('woff2'); }
+</style>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Pretendard','"Apple SD Gothic Neo"','system-ui','sans-serif'] },
+        colors: {
+          primary: { DEFAULT:'#FF8A65', hover:'#F47551', press:'#E36544', bg:'#FFF1EB' },
+          page: '#F8F9FA',
+          tableHead: '#F4F4F4',
+          ink: { primary:'#333333', secondary:'#666666', tertiary:'#999999', placeholder:'#AAAAAA' },
+          line: '#E5E7EB',
+          divider: '#EEEEEE',
+          field: '#F6F6F6',
+          // Status badges (bg / fg / bd[border])
+          status: {
+            'notify-bg':'#F3E5F5','notify-fg':'#9C27B0','notify-bd':'#E1BEE7',
+            'care-bg':'#FFF3E0','care-fg':'#E65100','care-bd':'#FFCC80',
+            'match-bg':'#E1F5FE','match-fg':'#0288D1','match-bd':'#B3E5FC',
+            'settle-bg':'#F5F5F5','settle-fg':'#616161','settle-bd':'#DCDCDC',
+          },
+        },
+        maxWidth: { page: '1200px' },
+      },
+    },
+  };
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body {
+    font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+    background:#FFFFFF;
+    color:#333333;
+    font-size: 16px;            /* 본문 */
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing:-0.01em;
+  }
+  button { font-family: inherit; font-size: inherit; cursor: pointer; }
+  input, select { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* Custom select chevron */
+  select.bare {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+  /* Date input chevron alignment */
+  input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+</style>
+
+<!-- Tailwind이 처리하는 base layer: preflight 뒤에 적용되어야 우선됨 -->
+<style type="text/tailwindcss">
+  @layer base {
+    /* Type scale: 24 / 18 / 16 / 14 */
+    h1 { font-size: 24px; font-weight: 700; line-height: 1.3; margin: 0; }   /* 제목1 */
+    h2 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 0; }   /* 제목2 */
+  }
+</style>
+</head>
+<body class="font-sans">
+
+<div class="min-h-screen flex flex-col bg-white">
+
+  <!-- Header -->
+  <header class="w-full bg-white border-b border-divider">
+    <div class="max-w-page mx-auto h-[72px] px-6 flex items-center justify-between">
+      <a href="./send.html" aria-label="바른케어플러스 홈">
+        <img src="./assets/바른케어플러스.png" alt="바른케어플러스" class="h-7 w-auto" />
+      </a>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#EEEEEE] text-[14px] font-semibold text-ink-primary">홍</span>
+          <span class="text-[14px] text-ink-primary"><strong class="font-semibold">홍길동</strong> <span class="font-normal text-ink-secondary">님</span></span>
+        </div>
+        <a href="./index.html" class="h-9 px-4 inline-flex items-center rounded-[8px] border border-line text-[14px] text-ink-primary bg-white hover:bg-page transition-colors">로그아웃</a>
+      </div>
+    </div>
+
+    <nav class="border-t border-divider">
+      <ul class="max-w-page mx-auto h-12 px-6 flex items-center justify-center gap-10">
+        <li><a href="./send.html" class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">알림톡전송</a></li>
+        <li><a href="./history.html" class="inline-flex items-center h-12 text-[16px] font-semibold text-ink-primary">전송내역</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 w-full">
+    <div class="max-w-page mx-auto px-6 py-10">
+
+      <section class="max-w-[1040px] mx-auto">
+        <h1 class="text-center text-ink-primary mb-6">전송내역</h1>
+
+        <!--
+          ▼ 필터 바 (회색 박스)
+          - px-[24px] py-[32px]: 박스 안쪽 좌우/상하 패딩
+          - rounded-[8px]: 박스 모서리
+        -->
+        <div class="bg-field rounded-[8px] px-[24px] py-[32px]">
+
+          <!-- 입력 필드 영역 + 조회 버튼을 가로로 정렬 -->
+          <div class="flex flex-col md:flex-row md:items-end">
+
+            <!--
+              ▼ 입력 필드 영역
+              - 컬럼 비율: 시작일=2 / 종료일=2 / 이름=4 / 연락처=4 (합 12)
+              - md:gap-[16px]: 입력 필드 ↔ 입력 필드 사이 간격
+              - 행 안의 gap-[4px]: 라벨 ↔ 인풋 세로 간격
+            -->
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-[12px] md:gap-[12px]">
+
+              <!-- 시작일 -->
+              <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+                <label class="text-[14px] text-ink-secondary">시작일</label>
+                <input type="date" id="startDate" value="2020-01-01"
+                       class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+              </div>
+
+              <!-- 종료일 -->
+              <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+                <label class="text-[14px] text-ink-secondary">종료일</label>
+                <input type="date" id="endDate" value="2020-01-01"
+                       class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+              </div>
+
+              <!-- 고객 이름 -->
+              <div class="md:col-span-4 flex flex-col gap-[4px] min-w-0">
+                <label class="text-[14px] text-ink-secondary">고객 이름</label>
+                <div class="flex items-center h-[40px] rounded-[8px] bg-white border border-line focus-within:border-primary px-[16px]">
+                  <input id="filterName" type="text" placeholder="고객이름"
+                         class="w-full h-full bg-transparent outline-none text-[14px] text-ink-primary placeholder:text-ink-placeholder" />
+                </div>
+              </div>
+
+              <!-- 고객 연락처 -->
+              <div class="md:col-span-4 flex flex-col gap-[4px] min-w-0">
+                <label class="text-[14px] text-ink-secondary">고객 연락처</label>
+                <div class="flex items-center h-[40px] rounded-[8px] bg-white border border-line focus-within:border-primary px-[16px]">
+                  <input id="filterPhone" type="text" placeholder="고객연락처"
+                         class="w-full h-full bg-transparent outline-none text-[14px] text-ink-primary placeholder:text-ink-placeholder" />
+                </div>
+              </div>
+            </div>
+
+            <!--
+              ▼ 조회 버튼  ★ 입력필드 ↔ 조회 버튼 가로 간격 = md:ml-[20px]   ◀ 여기를 조절!
+              - md:ml-[20px]: 데스크톱(md 이상)에서 입력필드 영역 ↔ 조회 버튼 사이 간격
+              - mt-[12px]:    모바일에서 줄바꿈 됐을 때의 세로 간격
+              - w-[110px] h-[40px]: 버튼 크기 / rounded-[8px]: 모서리
+            -->
+            <button id="searchBtn"
+                    class="mt-[12px] md:mt-0 md:ml-[16px] w-full md:w-[110px] h-[40px] rounded-[8px] bg-[#1A1A1A] hover:bg-black active:bg-black text-white text-[14px] font-medium transition-colors">
+              조회
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="mt-8 mb-2 flex items-center justify-between">
+          <p class="text-[16px] text-ink-primary">총 <strong id="totalCount" class="font-semibold">0</strong>건</p>
+          <div class="flex items-center gap-2 text-[14px] text-ink-secondary">
+            <select id="pageSize" class="bare w-[80px] h-9 rounded-[8px] bg-white border border-line pl-3 pr-8 text-[14px] text-ink-primary outline-none focus:border-gray-400">
+              <option value="15" selected>15</option>
+              <option value="30">30</option>
+              <option value="50">50</option>
+            </select>
+            <span>개씩 보기</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="w-full overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-tableHead text-ink-secondary text-[14px] border-b border-[#404040]">
+                <!-- 체크박스 컬럼 (현재 미사용 — 다시 쓰려면 아래 주석 해제)
+                <th class="h-12 w-12 px-3 font-medium align-middle">
+                  <button id="checkAll" type="button" role="checkbox" aria-checked="false"
+                          class="cb inline-flex items-center justify-center w-[20px] h-[20px] align-middle">
+                    <img src="./assets/check_off.png" alt="" class="block w-[20px] h-[20px]" draggable="false" />
+                  </button>
+                </th>
+                -->
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:220px">전송일시</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:160px">이름</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:220px">휴대폰번호</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:200px">진행상태</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav id="pagination" class="mt-8 flex items-center justify-center gap-1" aria-label="pagination"></nav>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-divider bg-white">
+    <div class="max-w-page mx-auto px-6 py-10 flex flex-col items-center gap-2">
+      <p class="text-[14px] text-ink-primary"><span class="font-semibold">Copyright</span> ⓒ 천호인터내셔널</p>
+      <p class="text-[14px] text-ink-tertiary">1644-0161(10:00~17:00) | cs@weplat.co.kr</p>
+    </div>
+  </footer>
+</div>
+
+<!--
+  ▼ 고객 상세 모달
+  - 기본 hidden, 테이블 행 클릭 시 표시
+  - 카드: max-w-[640px] / 상하/좌우 패딩 독립 조절 가능
+-->
+<div id="detailModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4 py-6"
+     role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+  <div class="bg-white rounded-[8px] w-full max-w-[640px] shadow-card relative
+              pt-[72px] pr-[44px] pb-[44px] pl-[44px] max-h-[90vh] overflow-y-auto">
+
+    <!-- 닫기 X (절대 위치) — assets/icn_x.png 사용 -->
+    <button id="detailClose" type="button" aria-label="닫기"
+            class="absolute top-[20px] right-[20px] w-[36px] h-[36px] inline-flex items-center justify-center hover:opacity-70 transition-opacity">
+      <img src="./assets/icn_x.png" alt="닫기" class="w-[20px] h-[20px]" draggable="false" />
+    </button>
+
+    <!-- 타이틀 (제목1: 24px/Bold, 가운데 정렬) -->
+    <h1 id="detailTitle" class="text-center mb-[40px]">고객상세</h1>
+
+    <!--
+      ▼ 기본 정보 (이름 / 연락처)
+      - 좌측 라벨 컬럼: w-[200px] bg-field (#F6F6F6 회색 배경)
+      - 우측 값 컬럼: flex-1 (남은 공간 차지)
+      - 행 높이: min-h-[56px]
+      - 라벨 ↔ 값 좌우 패딩: px-[24px]
+    -->
+    <div class="border-t border-divider">
+      <div class="flex items-stretch min-h-[56px] border-b border-divider">
+        <div class="w-[200px] bg-field px-[24px] flex items-center text-[16px] text-ink-secondary">고객이름</div>
+        <div id="detailName" class="flex-1 px-[24px] flex items-center text-[16px] text-ink-primary">홍길동</div>
+      </div>
+      <div class="flex items-stretch min-h-[56px] border-b border-divider">
+        <div class="w-[200px] bg-field px-[24px] flex items-center text-[16px] text-ink-secondary">고객연락처</div>
+        <div id="detailPhone" class="flex-1 px-[24px] flex items-center text-[16px] text-ink-primary">010-1234-5678</div>
+      </div>
+    </div>
+
+    <!-- 진행상태 섹션 -->
+    <div class="mt-[40px]">
+      <p class="mb-[12px] text-[14px] font-medium text-ink-primary">진행상태</p>
+      <div id="detailHistory" class="border-t border-divider">
+        <!-- 행이 동적으로 들어감 (renderDetailHistory에서 라벨 회색 배경 동일 패턴) -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Mock 데이터 (시안 기준 총 25건)
+   ============================================================ */
+const STATUSES = ['알림톡전송','케어신청완료','매칭완료','정산완료'];
+const NAMES = ['홍길동','김민수','이정수','박지영','최우민','정수아','한지우'];
+const PHONES = [
+  '010-1111-3434','010-2222-3434','010-3333-3434','010-4444-3434',
+  '010-5555-3434','010-6666-3434','010-7777-3434',
+];
+
+function row(id, ov={}){
+  return Object.assign({
+    id, sentAt:'2026.01.09 13:29:54', name:'김민수',
+    phone:'010-1234-3434', status:'매칭완료'
+  }, ov);
+}
+
+const TRANSMISSIONS = [
+  row(1,{ sentAt:'2026.02.21 10:21:31', name:'홍길동', phone:'010-1234-5678', status:'알림톡전송' }),
+  row(2,{ status:'알림톡전송' }),
+  row(3,{ status:'케어신청완료' }),
+  row(4),  row(5),  row(6),  row(7),  row(8),
+  row(9, { status:'정산완료' }), row(10),
+  row(11,{ status:'정산완료' }), row(12,{ status:'정산완료' }),
+  row(13,{ status:'정산완료' }), row(14,{ status:'정산완료' }),
+  row(15,{ status:'정산완료' }),
+  ...Array.from({length:10},(_,i)=>row(16+i,{
+    name:  NAMES[i%NAMES.length],
+    phone: PHONES[i%PHONES.length],
+    status:STATUSES[i%STATUSES.length],
+  })),
+];
+
+/* ============================================================
+   상태 -> 배지 클래스 매핑
+   ============================================================ */
+const BADGE_CLASS = {
+  '알림톡전송' : 'bg-status-notify-bg text-status-notify-fg',
+  '케어신청완료': 'bg-status-care-bg   text-status-care-fg',
+  '매칭완료'  : 'bg-status-match-bg  text-status-match-fg',
+  '정산완료'  : 'bg-status-settle-bg text-status-settle-fg',
+};
+
+/*
+  ▼ 상태 배지 스타일
+  - w-[164px]: 가로 길이 고정
+  - h-[38px]: 세로 높이
+  - rounded-[8px]: 모서리 (라운드 사각형)
+  - text-[14px] font-medium: 본문보다 한 단계 작은 옵션 사이즈
+  - 외곽선 없음 (배경색만)
+*/
+function badge(label){
+  const cls = BADGE_CLASS[label] || BADGE_CLASS['정산완료'];
+  return `<span class="inline-flex items-center justify-center w-[164px] h-[38px] rounded-[8px] text-[16px] font-medium ${cls}">${label}</span>`;
+}
+
+/* ============================================================
+   체크박스 (현재 미사용 — 다시 쓰려면 아래 블록 주석 해제)
+   - 이미지 에셋: check_on.png / check_off.png, 20×20
+   ============================================================ */
+/*
+const CB_ON  = `<img src="./assets/check_on.png"  alt="" class="block w-[20px] h-[20px]" draggable="false" />`;
+const CB_OFF = `<img src="./assets/check_off.png" alt="" class="block w-[20px] h-[20px]" draggable="false" />`;
+
+function paintCheckbox(btn, state){
+  // state: 'unchecked' | 'checked' | 'indeterminate'
+  // 부분선택(indeterminate)은 별도 에셋이 없어 'checked'와 동일하게 ON 이미지로 표시
+  btn.dataset.state = state;
+  btn.setAttribute('aria-checked', state === 'indeterminate' ? 'mixed' : (state === 'checked' ? 'true' : 'false'));
+  btn.className = 'cb inline-flex items-center justify-center w-[20px] h-[20px] align-middle';
+  btn.innerHTML = (state === 'unchecked') ? CB_OFF : CB_ON;
+}
+*/
+
+/* ============================================================
+   상태
+   ============================================================ */
+const state = {
+  filters: { startDate:'2020-01-01', endDate:'2020-01-01', name:'', phone:'' },
+  applied: { startDate:'2020-01-01', endDate:'2020-01-01', name:'', phone:'' },
+  page: 1,
+  pageSize: 15,
+  selected: new Set(),
+};
+
+function matches(r, f){
+  if (f.name  && !r.name.includes(f.name)) return false;
+  const target = (f.phone || '').replace(/\D/g,'');
+  if (target && !r.phone.replace(/\D/g,'').includes(target)) return false;
+  return true;
+}
+
+/* ============================================================
+   렌더
+   ============================================================ */
+function render(){
+  const filtered = TRANSMISSIONS.filter(r => matches(r, state.applied));
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if (state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.pageSize;
+  const pageRows = filtered.slice(start, start + state.pageSize);
+
+  document.getElementById('totalCount').textContent = total;
+
+  // Body
+  const tbody = document.getElementById('tbody');
+  if (pageRows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="h-24 text-center text-ink-tertiary">데이터가 없습니다.</td></tr>`;
+  } else {
+    tbody.innerHTML = pageRows.map(r => {
+      // const checked = state.selected.has(r.id); // 체크박스 미사용
+      return `
+        <tr class="row-tr border-b border-divider text-[16px] text-ink-primary cursor-pointer hover:bg-page transition-colors" data-row-id="${r.id}">
+          <!-- 체크박스 셀 (현재 미사용 — 다시 쓰려면 아래 주석 해제 + render() 안의 row-cb 핸들러 복원)
+          <td class="h-14 w-12 px-3 text-center align-middle">
+            <button type="button" role="checkbox" aria-checked="\${checked}" data-row-id="\${r.id}"
+              class="cb row-cb inline-flex items-center justify-center w-[20px] h-[20px] align-middle">
+              \${checked ? CB_ON : CB_OFF}
+            </button>
+          </td>
+          -->
+          <td class="h-14 px-4 whitespace-nowrap text-center">${r.sentAt}</td>
+          <td class="h-14 px-4 whitespace-nowrap text-center">${r.name}</td>
+          <td class="h-14 px-4 whitespace-nowrap text-center">${r.phone}</td>
+          <td class="h-14 px-4 whitespace-nowrap text-center">${badge(r.status)}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ────────────────────────────────────────────────
+  // 체크박스 관련 코드 (현재 미사용 — 다시 쓰려면 아래 블록 주석 해제)
+  // ────────────────────────────────────────────────
+  /*
+  // Header checkbox state
+  const allIds = pageRows.map(r => r.id);
+  const allChecked = allIds.length > 0 && allIds.every(id => state.selected.has(id));
+  const someChecked = !allChecked && allIds.some(id => state.selected.has(id));
+  const headerCb = document.getElementById('checkAll');
+  paintCheckbox(headerCb, allChecked ? 'checked' : (someChecked ? 'indeterminate' : 'unchecked'));
+
+  // Row checkbox handlers
+  document.querySelectorAll('.row-cb').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // 행 클릭으로 전파되어 모달이 뜨지 않도록 차단
+      const id = Number(btn.dataset.rowId);
+      if (state.selected.has(id)) state.selected.delete(id);
+      else state.selected.add(id);
+      render();
+    });
+  });
+  */
+
+  // Row click → 상세 모달
+  document.querySelectorAll('.row-tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const id = Number(tr.dataset.rowId);
+      const row = TRANSMISSIONS.find(r => r.id === id);
+      if (row) openDetail(row);
+    });
+  });
+
+  // Pagination
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  const $nav = document.getElementById('pagination');
+  const p = state.page;
+  const sib = 2;
+  const startN = Math.max(1, p - sib);
+  const endN = Math.min(totalPages, p + sib);
+
+  const btn = (label, opts={}) => {
+    const { disabled, active, target, ariaLabel } = opts;
+    const base = 'min-w-[36px] h-9 px-2 rounded-[8px] text-[14px] transition-colors';
+    const cls = active
+      ? 'text-ink-primary font-semibold underline underline-offset-4'
+      : (disabled
+          ? 'text-[#CCC] cursor-not-allowed'
+          : 'text-ink-secondary hover:text-ink-primary');
+    return `<button type="button" data-page="${target ?? ''}" ${disabled ? 'disabled' : ''} aria-label="${ariaLabel||''}" class="${base} ${cls}">${label}</button>`;
+  };
+
+  let html = '';
+  html += btn('«', { disabled:p===1, target:1, ariaLabel:'first' });
+  html += btn('‹', { disabled:p===1, target:p-1, ariaLabel:'prev' });
+  for (let i = startN; i <= endN; i++) {
+    html += btn(String(i), { active:i===p, target:i });
+  }
+  html += btn('›', { disabled:p===totalPages, target:p+1, ariaLabel:'next' });
+  html += btn('»', { disabled:p===totalPages, target:totalPages, ariaLabel:'last' });
+  $nav.innerHTML = html;
+  $nav.querySelectorAll('button[data-page]').forEach(b => {
+    if (b.disabled) return;
+    b.addEventListener('click', () => {
+      const next = Number(b.dataset.page);
+      if (next && next !== state.page) {
+        state.page = next;
+        state.selected.clear();
+        render();
+      }
+    });
+  });
+}
+
+/* ============================================================
+   이벤트
+   ============================================================ */
+document.getElementById('searchBtn').addEventListener('click', () => {
+  state.applied = {
+    startDate: document.getElementById('startDate').value,
+    endDate:   document.getElementById('endDate').value,
+    name:      document.getElementById('filterName').value.trim(),
+    phone:     document.getElementById('filterPhone').value.trim(),
+  };
+  state.page = 1;
+  state.selected.clear();
+  render();
+});
+
+document.getElementById('pageSize').addEventListener('change', e => {
+  state.pageSize = Number(e.target.value);
+  state.page = 1;
+  render();
+});
+
+/*
+// 체크박스 전체선택 핸들러 (현재 미사용)
+document.getElementById('checkAll').addEventListener('click', () => {
+  // 현재 페이지의 모든 row id 토글
+  const filtered = TRANSMISSIONS.filter(r => matches(r, state.applied));
+  const start = (state.page - 1) * state.pageSize;
+  const pageRows = filtered.slice(start, start + state.pageSize);
+  const allChecked = pageRows.length > 0 && pageRows.every(r => state.selected.has(r.id));
+  if (allChecked) pageRows.forEach(r => state.selected.delete(r.id));
+  else pageRows.forEach(r => state.selected.add(r.id));
+  render();
+});
+*/
+
+/* ============================================================
+   고객 상세 모달
+   - 행 클릭 시 openDetail(row) 호출
+   - 진행상태 타임라인은 row.status까지의 단계를 자동 생성
+     (예: row.status === '매칭완료' → 알림톡전송/케어신청완료/매칭완료 3개)
+   ============================================================ */
+const STATUS_FLOW = ['알림톡전송','케어신청완료','매칭완료','정산완료'];
+
+function parseSentAt(s){
+  // "2026.01.09 13:29:54" → Date
+  const m = (s || '').match(/(\d{4})[.\-/](\d{2})[.\-/](\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+  return m ? new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6]) : new Date();
+}
+function formatTs(d){
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+// row.status까지 거쳐온 단계 타임라인 (최신순)
+function getStatusHistory(row){
+  const idx = STATUS_FLOW.indexOf(row.status);
+  if (idx < 0) return [];
+  const base = parseSentAt(row.sentAt);
+  const items = [];
+  for (let i = 0; i <= idx; i++) {
+    const d = new Date(base.getTime() + i * 24 * 60 * 60 * 1000); // 단계당 +1일 (mock)
+    items.push({ status: STATUS_FLOW[i], at: formatTs(d) });
+  }
+  return items.reverse(); // 최신 단계 먼저
+}
+
+const $detail        = document.getElementById('detailModal');
+const $detailName    = document.getElementById('detailName');
+const $detailPhone   = document.getElementById('detailPhone');
+const $detailHistory = document.getElementById('detailHistory');
+const $detailClose   = document.getElementById('detailClose');
+
+function openDetail(row){
+  $detailName.textContent  = row.name;
+  $detailPhone.textContent = row.phone;
+  $detailHistory.innerHTML = getStatusHistory(row).map(h => `
+    <div class="flex items-stretch min-h-[56px] border-b border-divider">
+      <div class="w-[200px] bg-field px-[24px] flex items-center text-[16px] text-ink-secondary">${h.status}</div>
+      <div class="flex-1 px-[24px] flex items-center text-[16px] text-ink-primary">${h.at}</div>
+    </div>
+  `).join('');
+  $detail.classList.remove('hidden');
+  $detail.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+}
+function closeDetail(){
+  $detail.classList.add('hidden');
+  $detail.classList.remove('flex');
+  document.body.style.overflow = '';
+}
+
+$detailClose.addEventListener('click', closeDetail);
+$detail.addEventListener('click', (e) => { if (e.target === $detail) closeDetail(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$detail.classList.contains('hidden')) closeDetail();
+});
+
+// 첫 렌더
+render();
+</script>
+
+</body>
+</html>

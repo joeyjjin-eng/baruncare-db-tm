@@ -264,10 +264,39 @@
   });
   // 닫기 버튼
   $modalCancel.addEventListener('click', closeModal);
-  // 전송하기 버튼 → 모달 닫고 결과 안내
-  $modalOk.addEventListener('click', () => {
-    closeModal();
-    alert(`${$name.value.trim()}(${formatPhone($phone.value)})님께 알림톡을 전송했습니다.`);
+
+  /* ============================================================
+     전송하기 버튼 → 서버 API 호출 (/api/send.php)
+     ============================================================ */
+  $modalOk.addEventListener('click', async () => {
+    const orig = $modalOk.textContent;
+    $modalOk.disabled = true;
+    $modalOk.textContent = '전송 중...';
+    try {
+      const res  = await fetch('./api/send.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:  $name.value.trim(),
+          phone: $phone.value,
+        }),
+        credentials: 'same-origin',
+      });
+      if (res.status === 401) { location.href = './index.html'; return; }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        alert(data.error || '전송에 실패했습니다.');
+        return;
+      }
+      closeModal();
+      alert(data.data && data.data.message ? data.data.message : '알림톡이 전송되었습니다.');
+      location.href = './history.html';
+    } catch (err) {
+      alert('네트워크 오류: ' + (err && err.message ? err.message : err));
+    } finally {
+      $modalOk.disabled = false;
+      $modalOk.textContent = orig;
+    }
   });
 
   /* ============================================================
@@ -279,6 +308,40 @@
     openModal();
     return false;
   }
+
+  /* ============================================================
+     페이지 진입 시 로그인 상태 확인 + 헤더에 사용자 이름 반영
+     ============================================================ */
+  (async () => {
+    try {
+      const res = await fetch('./api/me.php', { credentials: 'same-origin' });
+      if (res.status === 401) { location.href = './index.html'; return; }
+      const data = await res.json();
+      if (data.ok && data.data && data.data.user) {
+        applyHeaderUser(data.data.user.name || '');
+      }
+    } catch (_) { /* 무시 */ }
+  })();
+
+  function applyHeaderUser(name){
+    if (!name) return;
+    const $avatar = document.querySelector('header span.rounded-full');
+    const $label  = document.querySelector('header .text-ink-primary strong');
+    if ($avatar) $avatar.textContent = name.charAt(0);
+    if ($label)  $label.textContent  = name;
+  }
+
+  /* ============================================================
+     로그아웃 (헤더의 "로그아웃" 링크에 연결)
+     ============================================================ */
+  document.querySelectorAll('a[href="./index.html"]').forEach(a => {
+    if ((a.textContent || '').trim() !== '로그아웃') return;
+    a.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await fetch('./api/logout.php', { credentials: 'same-origin' }); } catch (_) {}
+      location.href = './index.html';
+    });
+  });
 </script>
 
 </body>

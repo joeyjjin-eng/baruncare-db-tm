@@ -279,37 +279,12 @@
 
 <script>
 /* ============================================================
-   Mock 데이터 (시안 기준 총 25건)
+   서버 API 연동 — Mock 데이터는 제거됨
+     - GET  /api/history.php  : 목록 + 필터 + 페이지네이션
+     - GET  /api/detail.php   : 한 건 상세 + 상태 이력
+     - GET  /api/me.php       : 로그인 사용자 정보
+     - POST /api/logout.php   : 로그아웃
    ============================================================ */
-const STATUSES = ['알림톡전송','케어신청완료','매칭완료','정산완료'];
-const NAMES = ['홍길동','김민수','이정수','박지영','최우민','정수아','한지우'];
-const PHONES = [
-  '010-1111-3434','010-2222-3434','010-3333-3434','010-4444-3434',
-  '010-5555-3434','010-6666-3434','010-7777-3434',
-];
-
-function row(id, ov={}){
-  return Object.assign({
-    id, sentAt:'2026.01.09 13:29:54', name:'김민수',
-    phone:'010-1234-3434', status:'매칭완료'
-  }, ov);
-}
-
-const TRANSMISSIONS = [
-  row(1,{ sentAt:'2026.02.21 10:21:31', name:'홍길동', phone:'010-1234-5678', status:'알림톡전송' }),
-  row(2,{ status:'알림톡전송' }),
-  row(3,{ status:'케어신청완료' }),
-  row(4),  row(5),  row(6),  row(7),  row(8),
-  row(9, { status:'정산완료' }), row(10),
-  row(11,{ status:'정산완료' }), row(12,{ status:'정산완료' }),
-  row(13,{ status:'정산완료' }), row(14,{ status:'정산완료' }),
-  row(15,{ status:'정산완료' }),
-  ...Array.from({length:10},(_,i)=>row(16+i,{
-    name:  NAMES[i%NAMES.length],
-    phone: PHONES[i%PHONES.length],
-    status:STATUSES[i%STATUSES.length],
-  })),
-];
 
 /* ============================================================
    상태 -> 배지 클래스 매핑
@@ -363,23 +338,41 @@ const state = {
   selected: new Set(),
 };
 
-function matches(r, f){
-  if (f.name  && !r.name.includes(f.name)) return false;
-  const target = (f.phone || '').replace(/\D/g,'');
-  if (target && !r.phone.replace(/\D/g,'').includes(target)) return false;
-  return true;
+/* ============================================================
+   서버에서 목록 가져오기
+   ============================================================ */
+async function fetchPage(){
+  const params = new URLSearchParams({
+    page:      String(state.page),
+    pageSize:  String(state.pageSize),
+    name:      state.applied.name  || '',
+    phone:     state.applied.phone || '',
+    startDate: state.applied.startDate || '',
+    endDate:   state.applied.endDate   || '',
+  });
+  const res = await fetch('./api/history.php?' + params.toString(), { credentials: 'same-origin' });
+  if (res.status === 401) { location.href = './index.html'; return null; }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || '조회 실패');
+  return data.data; // { rows, total, page, pageSize }
 }
 
 /* ============================================================
-   렌더
+   렌더 (서버 응답을 그리기)
    ============================================================ */
-function render(){
-  const filtered = TRANSMISSIONS.filter(r => matches(r, state.applied));
-  const total = filtered.length;
+async function render(){
+  let payload;
+  try { payload = await fetchPage(); }
+  catch (err) {
+    alert('내역 조회 실패: ' + err.message);
+    return;
+  }
+  if (!payload) return; // 401 → 이미 리다이렉트
+
+  const pageRows   = payload.rows  || [];
+  const total      = payload.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
   if (state.page > totalPages) state.page = totalPages;
-  const start = (state.page - 1) * state.pageSize;
-  const pageRows = filtered.slice(start, start + state.pageSize);
 
   document.getElementById('totalCount').textContent = total;
 
@@ -431,12 +424,11 @@ function render(){
   });
   */
 
-  // Row click → 상세 모달
+  // Row click → 상세 모달 (id로 서버 조회)
   document.querySelectorAll('.row-tr').forEach(tr => {
     tr.addEventListener('click', () => {
       const id = Number(tr.dataset.rowId);
-      const row = TRANSMISSIONS.find(r => r.id === id);
-      if (row) openDetail(row);
+      if (id) openDetail(id);
     });
   });
 
@@ -520,53 +512,39 @@ document.getElementById('checkAll').addEventListener('click', () => {
 */
 
 /* ============================================================
-   고객 상세 모달
-   - 행 클릭 시 openDetail(row) 호출
-   - 진행상태 타임라인은 row.status까지의 단계를 자동 생성
-     (예: row.status === '매칭완료' → 알림톡전송/케어신청완료/매칭완료 3개)
+   고객 상세 모달 (서버 조회: GET /api/detail.php?id=...)
    ============================================================ */
-const STATUS_FLOW = ['알림톡전송','케어신청완료','매칭완료','정산완료'];
-
-function parseSentAt(s){
-  // "2026.01.09 13:29:54" → Date
-  const m = (s || '').match(/(\d{4})[.\-/](\d{2})[.\-/](\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
-  return m ? new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6]) : new Date();
-}
-function formatTs(d){
-  const pad = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-// row.status까지 거쳐온 단계 타임라인 (최신순)
-function getStatusHistory(row){
-  const idx = STATUS_FLOW.indexOf(row.status);
-  if (idx < 0) return [];
-  const base = parseSentAt(row.sentAt);
-  const items = [];
-  for (let i = 0; i <= idx; i++) {
-    const d = new Date(base.getTime() + i * 24 * 60 * 60 * 1000); // 단계당 +1일 (mock)
-    items.push({ status: STATUS_FLOW[i], at: formatTs(d) });
-  }
-  return items.reverse(); // 최신 단계 먼저
-}
-
 const $detail        = document.getElementById('detailModal');
 const $detailName    = document.getElementById('detailName');
 const $detailPhone   = document.getElementById('detailPhone');
 const $detailHistory = document.getElementById('detailHistory');
 const $detailClose   = document.getElementById('detailClose');
 
-function openDetail(row){
-  $detailName.textContent  = row.name;
-  $detailPhone.textContent = row.phone;
-  $detailHistory.innerHTML = getStatusHistory(row).map(h => `
-    <div class="flex items-stretch min-h-[56px] border-b border-divider">
-      <div class="w-[200px] bg-field px-[24px] flex items-center text-[16px] text-ink-secondary">${h.status}</div>
-      <div class="flex-1 px-[24px] flex items-center text-[16px] text-ink-primary">${h.at}</div>
-    </div>
-  `).join('');
-  $detail.classList.remove('hidden');
-  $detail.classList.add('flex');
-  document.body.style.overflow = 'hidden';
+async function openDetail(id){
+  try {
+    const res = await fetch('./api/detail.php?id=' + encodeURIComponent(id), { credentials: 'same-origin' });
+    if (res.status === 401) { location.href = './index.html'; return; }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) { alert(data.error || '상세 조회 실패'); return; }
+
+    const row     = data.data.row     || {};
+    const history = data.data.history || [];
+
+    $detailName.textContent  = row.name  || '';
+    $detailPhone.textContent = row.phone || '';
+    $detailHistory.innerHTML = history.map(h => `
+      <div class="flex items-stretch min-h-[56px] border-b border-divider">
+        <div class="w-[200px] bg-field px-[24px] flex items-center text-[16px] text-ink-secondary">${h.status}</div>
+        <div class="flex-1 px-[24px] flex items-center text-[16px] text-ink-primary">${h.at}</div>
+      </div>
+    `).join('');
+
+    $detail.classList.remove('hidden');
+    $detail.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  } catch (err) {
+    alert('네트워크 오류: ' + (err && err.message ? err.message : err));
+  }
 }
 function closeDetail(){
   $detail.classList.add('hidden');
@@ -578,6 +556,36 @@ $detailClose.addEventListener('click', closeDetail);
 $detail.addEventListener('click', (e) => { if (e.target === $detail) closeDetail(); });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$detail.classList.contains('hidden')) closeDetail();
+});
+
+/* ============================================================
+   로그인 상태 확인 + 헤더에 사용자 이름 반영
+   ============================================================ */
+(async () => {
+  try {
+    const res = await fetch('./api/me.php', { credentials: 'same-origin' });
+    if (res.status === 401) { location.href = './index.html'; return; }
+    const data = await res.json();
+    const name = data && data.ok && data.data && data.data.user ? data.data.user.name : '';
+    if (name) {
+      const $avatar = document.querySelector('header span.rounded-full');
+      const $label  = document.querySelector('header .text-ink-primary strong');
+      if ($avatar) $avatar.textContent = name.charAt(0);
+      if ($label)  $label.textContent  = name;
+    }
+  } catch (_) { /* ignore */ }
+})();
+
+/* ============================================================
+   로그아웃 핸들러
+   ============================================================ */
+document.querySelectorAll('a[href="./index.html"]').forEach(a => {
+  if ((a.textContent || '').trim() !== '로그아웃') return;
+  a.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try { await fetch('./api/logout.php', { credentials: 'same-origin' }); } catch (_) {}
+    location.href = './index.html';
+  });
 });
 
 // 첫 렌더

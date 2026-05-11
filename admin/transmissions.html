@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>바른케어플러스 TM · 관리자 · 전송내역 관리</title>
+
+<style>
+  @font-face { font-family:'Pretendard'; font-weight:400; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-Regular.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:500; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-Medium.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:600; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-SemiBold.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:700; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-Bold.woff2') format('woff2'); }
+</style>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Pretendard','"Apple SD Gothic Neo"','system-ui','sans-serif'] },
+        colors: {
+          primary: { DEFAULT:'#FF8A65', hover:'#F47551', press:'#E36544', bg:'#FFF1EB' },
+          page: '#F8F9FA',
+          tableHead: '#F4F4F4',
+          ink: { primary:'#333333', secondary:'#666666', tertiary:'#999999', placeholder:'#AAAAAA' },
+          line: '#E5E7EB',
+          divider: '#EEEEEE',
+          field: '#F6F6F6',
+          status: {
+            'notify-bg':'#F3E5F5','notify-fg':'#9C27B0',
+            'care-bg':'#FFF3E0','care-fg':'#E65100',
+            'match-bg':'#E1F5FE','match-fg':'#0288D1',
+            'settle-bg':'#F5F5F5','settle-fg':'#616161',
+          },
+        },
+        maxWidth: { page: '1200px' },
+      },
+    },
+  };
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body {
+    font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+    background:#FFFFFF; color:#333333; font-size:16px; line-height:1.5;
+    -webkit-font-smoothing: antialiased; letter-spacing:-0.01em;
+  }
+  button { font-family: inherit; font-size: inherit; cursor: pointer; }
+  input, select { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  select.bare {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+</style>
+
+<style type="text/tailwindcss">
+  @layer base {
+    h1 { font-size: 24px; font-weight: 700; line-height: 1.3; margin: 0; }
+    h2 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 0; }
+  }
+</style>
+</head>
+<body class="font-sans">
+
+<div class="min-h-screen flex flex-col bg-white">
+
+  <!-- Header -->
+  <header class="w-full bg-white border-b border-divider">
+    <div class="max-w-page mx-auto h-[72px] px-6 flex items-center justify-between">
+      <a href="./users.html" class="flex items-center gap-3" aria-label="관리자 홈">
+        <img src="../assets/바른케어플러스.png" alt="바른케어플러스" class="h-7 w-auto" />
+        <span class="inline-flex items-center h-[24px] px-[10px] rounded-[8px] bg-primary-bg text-primary text-[12px] font-semibold">관리자</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span id="meAvatar" class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#EEEEEE] text-[14px] font-semibold text-ink-primary">관</span>
+          <span class="text-[14px] text-ink-primary"><strong id="meName" class="font-semibold">관리자</strong> <span class="font-normal text-ink-secondary">님</span></span>
+        </div>
+        <a id="logoutBtn" href="#" class="h-9 px-4 inline-flex items-center rounded-[8px] border border-line text-[14px] text-ink-primary bg-white hover:bg-page transition-colors">로그아웃</a>
+      </div>
+    </div>
+
+    <nav class="border-t border-divider">
+      <ul class="max-w-page mx-auto h-12 px-6 flex items-center justify-center gap-10">
+        <li><a href="./users.html"        class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">TM 관리</a></li>
+        <li><a href="./transmissions.html" class="inline-flex items-center h-12 text-[16px] font-semibold text-ink-primary">전송내역 관리</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 w-full">
+    <div class="max-w-page mx-auto px-6 py-10">
+
+      <section class="max-w-[1200px] mx-auto">
+        <h1 class="text-center text-ink-primary mb-6">전송내역 관리</h1>
+
+        <!-- Filter Bar -->
+        <div class="bg-field rounded-[8px] px-[24px] py-[24px]">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-[12px] md:gap-[14px] items-end">
+
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">시작일</label>
+              <input type="date" id="fStart"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">종료일</label>
+              <input type="date" id="fEnd"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">TM 이름</label>
+              <input id="fTm" type="text" placeholder="TM이름"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">고객명</label>
+              <input id="fName" type="text" placeholder="고객명"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">고객 연락처</label>
+              <input id="fPhone" type="text" placeholder="고객연락처"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">진행상태</label>
+              <select id="fStatus" class="bare h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary">
+                <option value="">전체</option>
+                <option value="알림톡전송">알림톡전송</option>
+                <option value="케어신청완료">케어신청완료</option>
+                <option value="매칭완료">매칭완료</option>
+                <option value="정산완료">정산완료</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="mt-[16px] flex justify-end">
+            <button id="searchBtn" class="h-[40px] w-[110px] rounded-[8px] bg-[#1A1A1A] hover:bg-black text-white text-[14px] font-medium transition-colors">조회</button>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="mt-8 mb-3 flex items-center justify-between">
+          <p class="text-[16px] text-ink-primary">총 <strong id="totalCount" class="font-semibold">0</strong>건</p>
+          <div class="flex items-center gap-2 text-[14px] text-ink-secondary">
+            <select id="pageSize" class="bare w-[80px] h-9 rounded-[8px] bg-white border border-line pl-3 pr-8 text-[14px] text-ink-primary outline-none focus:border-primary">
+              <option value="15">15</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <span>개씩 보기</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="w-full overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-tableHead text-ink-secondary text-[14px] border-b border-[#404040]">
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:140px">TM 이름</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:140px">고객명</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:180px">고객 연락처</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:200px">전송일시</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:180px">진행상태</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:200px">관리</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav id="pagination" class="mt-8 flex items-center justify-center gap-1" aria-label="pagination"></nav>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-divider bg-white">
+    <div class="max-w-page mx-auto px-6 py-10 flex flex-col items-center gap-2">
+      <p class="text-[14px] text-ink-primary"><span class="font-semibold">Copyright</span> ⓒ 천호인터내셔널</p>
+      <p class="text-[14px] text-ink-tertiary">1644-0161(10:00~17:00) | cs@weplat.co.kr</p>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ============================================================
+     전송내역 수정 모달 (행 클릭 또는 "수정" 클릭 시)
+     ============================================================ -->
+<div id="txModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4 py-6"
+     role="dialog" aria-modal="true" aria-labelledby="txModalTitle">
+  <div class="bg-white rounded-[8px] w-full max-w-[680px] shadow-card relative pt-[44px] pr-[44px] pb-[44px] pl-[44px] max-h-[90vh] overflow-y-auto">
+
+    <button id="txModalClose" type="button" aria-label="닫기"
+            class="absolute top-[20px] right-[20px] w-[36px] h-[36px] inline-flex items-center justify-center hover:opacity-70 transition-opacity">
+      <img src="../assets/icn_x.png" alt="닫기" class="w-[20px] h-[20px]" draggable="false" />
+    </button>
+
+    <h2 id="txModalTitle" class="text-center mb-[28px]">전송내역 수정</h2>
+
+    <form id="txForm" onsubmit="return onTxSubmit(event)">
+      <input type="hidden" id="txId" value="" />
+
+      <!-- 기본 정보 -->
+      <div class="border-t border-divider">
+        <div class="flex items-stretch min-h-[56px] border-b border-divider">
+          <div class="w-[180px] bg-field px-[20px] flex items-center text-[14px] text-ink-secondary">TM 이름</div>
+          <div id="txTm" class="flex-1 px-[20px] flex items-center text-[16px] text-ink-primary">—</div>
+        </div>
+        <div class="flex items-stretch min-h-[56px] border-b border-divider">
+          <div class="w-[180px] bg-field px-[20px] flex items-center text-[14px] text-ink-secondary">고객명</div>
+          <div class="flex-1 px-[16px] flex items-center">
+            <input id="txName" type="text" class="w-full h-[40px] rounded-[8px] bg-white border border-line px-[12px] text-[16px] text-ink-primary outline-none focus:border-primary" />
+          </div>
+        </div>
+        <div class="flex items-stretch min-h-[56px] border-b border-divider">
+          <div class="w-[180px] bg-field px-[20px] flex items-center text-[14px] text-ink-secondary">고객 연락처</div>
+          <div class="flex-1 px-[16px] flex items-center">
+            <input id="txPhone" type="text" placeholder="010-1234-5678" class="w-full h-[40px] rounded-[8px] bg-white border border-line px-[12px] text-[16px] text-ink-primary outline-none focus:border-primary" />
+          </div>
+        </div>
+        <div class="flex items-stretch min-h-[56px] border-b border-divider">
+          <div class="w-[180px] bg-field px-[20px] flex items-center text-[14px] text-ink-secondary">전송일시</div>
+          <div id="txSentAt" class="flex-1 px-[20px] flex items-center text-[16px] text-ink-primary">—</div>
+        </div>
+        <div class="flex items-stretch min-h-[56px] border-b border-divider">
+          <div class="w-[180px] bg-field px-[20px] flex items-center text-[14px] text-ink-secondary">현재 진행상태</div>
+          <div class="flex-1 px-[16px] flex items-center">
+            <select id="txStatus" class="bare h-[40px] w-[240px] rounded-[8px] bg-white border border-line px-[12px] text-[16px] text-ink-primary outline-none focus:border-primary">
+              <option value="알림톡전송">알림톡전송</option>
+              <option value="케어신청완료">케어신청완료</option>
+              <option value="매칭완료">매칭완료</option>
+              <option value="정산완료">정산완료</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 진행상태별 일시 -->
+      <div class="mt-[32px]">
+        <p class="mb-[16px] text-[14px] font-medium text-ink-primary">진행상태별 일시</p>
+        <div id="txHistory" class="border-t border-divider">
+          <!-- 동적으로 행 추가됨 -->
+        </div>
+      </div>
+
+      <!-- 액션 -->
+      <div class="mt-[28px] flex items-center justify-end gap-[12px]">
+        <button type="button" id="txCancel" class="h-[44px] px-[20px] text-[14px] font-medium text-ink-secondary hover:text-ink-primary transition-colors">취소</button>
+        <button type="submit" id="txOk" class="h-[44px] px-[24px] rounded-[8px] bg-primary text-white text-[14px] font-semibold hover:bg-primary-hover active:bg-primary-press transition-colors">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+/* ============================================================
+   세션 확인 + 헤더 사용자명 반영
+   ============================================================ */
+let ME = null;
+(async () => {
+  try {
+    const res = await fetch('../api/me.php', { credentials: 'same-origin' });
+    if (res.status === 401) { location.href = '../index.html'; return; }
+    const data = await res.json();
+    if (!data.ok) { location.href = '../index.html'; return; }
+    ME = data.data.user;
+    if (ME.role !== 'admin') { alert('관리자만 접근 가능합니다.'); location.href = '../send.html'; return; }
+    document.getElementById('meName').textContent   = ME.name;
+    document.getElementById('meAvatar').textContent = (ME.name || '관').charAt(0);
+    await render();
+  } catch (_) {
+    location.href = '../index.html';
+  }
+})();
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  try { await fetch('../api/logout.php', { credentials: 'same-origin' }); } catch (_) {}
+  location.href = '../index.html';
+});
+
+/* ============================================================
+   상태 배지 매핑
+   ============================================================ */
+const BADGE_CLASS = {
+  '알림톡전송' : 'bg-status-notify-bg text-status-notify-fg',
+  '케어신청완료': 'bg-status-care-bg   text-status-care-fg',
+  '매칭완료'  : 'bg-status-match-bg  text-status-match-fg',
+  '정산완료'  : 'bg-status-settle-bg text-status-settle-fg',
+};
+function badge(label){
+  const cls = BADGE_CLASS[label] || BADGE_CLASS['정산완료'];
+  return `<span class="inline-flex items-center justify-center w-[140px] h-[34px] rounded-[8px] text-[14px] font-medium ${cls}">${label}</span>`;
+}
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============================================================
+   상태 & 렌더
+   ============================================================ */
+const state = {
+  applied: { startDate:'', endDate:'', tm:'', name:'', phone:'', status:'' },
+  page: 1,
+  pageSize: 30,
+};
+
+async function fetchPage(){
+  const p = new URLSearchParams({
+    page:      String(state.page),
+    pageSize:  String(state.pageSize),
+    tm:        state.applied.tm,
+    name:      state.applied.name,
+    phone:     state.applied.phone,
+    status:    state.applied.status,
+    startDate: state.applied.startDate,
+    endDate:   state.applied.endDate,
+  });
+  const res = await fetch('../api/admin/transmissions_list.php?' + p, { credentials: 'same-origin' });
+  if (res.status === 401) { location.href = '../index.html'; return null; }
+  if (res.status === 403) { alert('관리자 권한이 필요합니다.'); location.href = '../send.html'; return null; }
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) { alert(data.error || '조회 실패'); return null; }
+  return data.data;
+}
+
+async function render(){
+  const payload = await fetchPage();
+  if (!payload) return;
+
+  const rows = payload.rows || [];
+  const total = payload.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if (state.page > totalPages) state.page = totalPages;
+
+  document.getElementById('totalCount').textContent = total;
+
+  const $tbody = document.getElementById('tbody');
+  if (rows.length === 0) {
+    $tbody.innerHTML = `<tr><td colspan="6" class="h-24 text-center text-ink-tertiary">데이터가 없습니다.</td></tr>`;
+  } else {
+    $tbody.innerHTML = rows.map(r => `
+      <tr class="border-b border-divider text-[16px] text-ink-primary">
+        <td class="h-14 px-4 whitespace-nowrap text-center">${escapeHtml(r.tmName)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">${escapeHtml(r.name)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">${escapeHtml(r.phone)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center text-ink-secondary">${escapeHtml(r.sentAt)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">${badge(r.status)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">
+          <div class="flex items-center justify-center gap-[8px]">
+            <button type="button" data-action="edit"   data-id="${r.id}"
+                    class="h-[32px] px-[12px] rounded-[8px] border border-line text-[13px] text-ink-primary bg-white hover:bg-page transition-colors">수정</button>
+            <button type="button" data-action="delete" data-id="${r.id}" data-name="${escapeHtml(r.name)}"
+                    class="h-[32px] px-[12px] rounded-[8px] border border-line text-[13px] text-red-600 bg-white hover:bg-red-50 transition-colors">삭제</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    $tbody.querySelectorAll('button[data-action="edit"]').forEach(b => {
+      b.addEventListener('click', () => openTxModal(Number(b.dataset.id)));
+    });
+    $tbody.querySelectorAll('button[data-action="delete"]').forEach(b => {
+      b.addEventListener('click', () => deleteTx(Number(b.dataset.id), b.dataset.name));
+    });
+  }
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  const $nav = document.getElementById('pagination');
+  const p = state.page;
+  const sib = 2;
+  const a = Math.max(1, p - sib);
+  const b = Math.min(totalPages, p + sib);
+
+  const make = (label, opts={}) => {
+    const { disabled, active, target, ariaLabel } = opts;
+    const base = 'min-w-[36px] h-9 px-2 rounded-[8px] text-[14px] transition-colors';
+    const cls = active
+      ? 'text-ink-primary font-semibold underline underline-offset-4'
+      : (disabled ? 'text-[#CCC] cursor-not-allowed' : 'text-ink-secondary hover:text-ink-primary');
+    return `<button type="button" data-page="${target ?? ''}" ${disabled?'disabled':''} aria-label="${ariaLabel||''}" class="${base} ${cls}">${label}</button>`;
+  };
+
+  let html = '';
+  html += make('«', { disabled:p===1, target:1, ariaLabel:'first' });
+  html += make('‹', { disabled:p===1, target:p-1, ariaLabel:'prev' });
+  for (let i = a; i <= b; i++) html += make(String(i), { active:i===p, target:i });
+  html += make('›', { disabled:p===totalPages, target:p+1, ariaLabel:'next' });
+  html += make('»', { disabled:p===totalPages, target:totalPages, ariaLabel:'last' });
+
+  $nav.innerHTML = html;
+  $nav.querySelectorAll('button[data-page]').forEach(btn => {
+    if (btn.disabled) return;
+    btn.addEventListener('click', () => {
+      const next = Number(btn.dataset.page);
+      if (next && next !== state.page) { state.page = next; render(); }
+    });
+  });
+}
+
+/* ============================================================
+   필터 이벤트
+   ============================================================ */
+document.getElementById('searchBtn').addEventListener('click', () => {
+  state.applied = {
+    startDate: document.getElementById('fStart').value,
+    endDate:   document.getElementById('fEnd').value,
+    tm:        document.getElementById('fTm').value.trim(),
+    name:      document.getElementById('fName').value.trim(),
+    phone:     document.getElementById('fPhone').value.trim(),
+    status:    document.getElementById('fStatus').value,
+  };
+  state.page = 1;
+  render();
+});
+document.getElementById('pageSize').addEventListener('change', e => {
+  state.pageSize = Number(e.target.value);
+  state.page = 1;
+  render();
+});
+
+/* ============================================================
+   수정 모달
+   ============================================================ */
+const $tx = document.getElementById('txModal');
+let txDetail = null; // { row, history }
+
+async function openTxModal(id){
+  try {
+    const res = await fetch('../api/admin/transmission_detail.php?id=' + id, { credentials: 'same-origin' });
+    if (res.status === 401) { location.href = '../index.html'; return; }
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) { alert(data.error || '상세 조회 실패'); return; }
+    txDetail = data.data;
+
+    document.getElementById('txId').value      = txDetail.row.id;
+    document.getElementById('txTm').textContent     = txDetail.row.tmName || '—';
+    document.getElementById('txName').value         = txDetail.row.name  || '';
+    document.getElementById('txPhone').value        = txDetail.row.phone || '';
+    document.getElementById('txSentAt').textContent = txDetail.row.sentAt|| '—';
+    document.getElementById('txStatus').value       = txDetail.row.status|| '알림톡전송';
+
+    // 진행상태별 일시 (수정 가능 datetime-local)
+    const $h = document.getElementById('txHistory');
+    if (!txDetail.history.length) {
+      $h.innerHTML = `<div class="px-[20px] py-[16px] text-ink-tertiary text-[14px]">기록된 단계가 없습니다.</div>`;
+    } else {
+      $h.innerHTML = txDetail.history.map(h => {
+        const localVal = (h.at || '').replace(' ', 'T').slice(0, 16); // YYYY-MM-DDTHH:MM
+        return `
+          <div class="flex items-stretch min-h-[56px] border-b border-divider" data-hid="${h.id}">
+            <div class="w-[180px] bg-field px-[20px] flex items-center text-[14px] text-ink-secondary">${escapeHtml(h.status)}</div>
+            <div class="flex-1 px-[16px] flex items-center gap-[12px]">
+              <input type="datetime-local" value="${escapeHtml(localVal)}"
+                     class="hist-at h-[40px] flex-1 rounded-[8px] bg-white border border-line px-[12px] text-[14px] text-ink-primary outline-none focus:border-primary" />
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    $tx.classList.remove('hidden');
+    $tx.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  } catch (err) {
+    alert('네트워크 오류: ' + err.message);
+  }
+}
+function closeTx(){
+  $tx.classList.add('hidden');
+  $tx.classList.remove('flex');
+  document.body.style.overflow = '';
+}
+document.getElementById('txCancel').addEventListener('click', closeTx);
+document.getElementById('txModalClose').addEventListener('click', closeTx);
+$tx.addEventListener('click', (e) => { if (e.target === $tx) closeTx(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$tx.classList.contains('hidden')) closeTx();
+});
+
+/* ============================================================
+   저장 (수정)
+   ============================================================ */
+async function onTxSubmit(e){
+  e.preventDefault();
+  if (!txDetail) return false;
+
+  // 단계별 일시 수집
+  const historyEdits = [];
+  document.querySelectorAll('#txHistory > div[data-hid]').forEach(row => {
+    const hid = Number(row.dataset.hid);
+    const inp = row.querySelector('.hist-at');
+    if (hid && inp && inp.value) {
+      historyEdits.push({ id: hid, changed_at: inp.value.replace('T', ' ') + ':00' });
+    }
+  });
+
+  const body = {
+    id:     Number(document.getElementById('txId').value),
+    name:   document.getElementById('txName').value.trim(),
+    phone:  document.getElementById('txPhone').value.trim(),
+    status: document.getElementById('txStatus').value,
+    history: historyEdits,
+  };
+
+  try {
+    const res = await fetch('../api/admin/transmission_save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      credentials: 'same-origin',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) { alert(data.error || '저장 실패'); return false; }
+    closeTx();
+    await render();
+  } catch (err) {
+    alert('네트워크 오류: ' + err.message);
+  }
+  return false;
+}
+
+/* ============================================================
+   삭제
+   ============================================================ */
+async function deleteTx(id, name){
+  if (!confirm(`'${name}'의 전송 내역을 삭제하시겠습니까?\n(관련 진행상태 이력도 함께 삭제됩니다.)`)) return;
+  try {
+    const res = await fetch('../api/admin/transmission_delete.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+      credentials: 'same-origin',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) { alert(data.error || '삭제 실패'); return; }
+    await render();
+  } catch (err) {
+    alert('네트워크 오류: ' + err.message);
+  }
+}
+</script>
+
+</body>
+</html>

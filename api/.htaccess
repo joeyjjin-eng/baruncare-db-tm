@@ -1,0 +1,7 @@
+# _config.php / _bootstrap.php 같은 내부 파일은 직접 접근 차단
+<FilesMatch "^_">
+    Require all denied
+</FilesMatch>
+
+# api 폴더 자체 디렉토리 리스팅 차단
+Options -Indexes

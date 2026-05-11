@@ -127,10 +127,36 @@
 </div>
 
 <script>
-  function onLoginSubmit(e){
+  async function onLoginSubmit(e){
     e.preventDefault();
-    // 데모: 입력값 검증 후 알림톡전송 페이지로 이동
-    location.href = './send.html';
+    const username = document.getElementById('loginId').value.trim();
+    const password = document.getElementById('loginPw').value;
+    if (!username || !password) {
+      alert('아이디와 비밀번호를 입력하세요.');
+      return false;
+    }
+    const $btn = e.submitter || document.querySelector('#loginForm button[type=submit]');
+    if ($btn) { $btn.disabled = true; $btn.dataset.label = $btn.textContent; $btn.textContent = '로그인 중...'; }
+    try {
+      const res  = await fetch('./api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'same-origin',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        alert(data.error || '로그인에 실패했습니다.');
+        return false;
+      }
+      // role 에 따라 진입 페이지 분기
+      const role = data.data && data.data.user ? data.data.user.role : 'user';
+      location.href = role === 'admin' ? './admin/users.html' : './send.html';
+    } catch (err) {
+      alert('네트워크 오류: ' + (err && err.message ? err.message : err));
+    } finally {
+      if ($btn) { $btn.disabled = false; $btn.textContent = $btn.dataset.label || '로그인'; }
+    }
     return false;
   }
 </script>

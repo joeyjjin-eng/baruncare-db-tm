@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>바른케어플러스 TM · 관리자 · 청구도우미 신청</title>
+
+<style>
+  @font-face { font-family:'Pretendard'; font-weight:400; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-Regular.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:500; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-Medium.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:600; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-SemiBold.woff2') format('woff2'); }
+  @font-face { font-family:'Pretendard'; font-weight:700; font-style:normal; font-display:swap;
+    src: url('../fonts/Pretendard-Bold.woff2') format('woff2'); }
+</style>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Pretendard','"Apple SD Gothic Neo"','system-ui','sans-serif'] },
+        colors: {
+          primary: { DEFAULT:'#FF8A65', hover:'#F47551', press:'#E36544', bg:'#FFF1EB' },
+          page: '#F8F9FA',
+          tableHead: '#F4F4F4',
+          ink: { primary:'#333333', secondary:'#666666', tertiary:'#999999', placeholder:'#AAAAAA' },
+          line: '#E5E7EB',
+          divider: '#EEEEEE',
+          field: '#F6F6F6',
+          status: {
+            'pending-bg':'#FFF3E0','pending-fg':'#E65100',
+            'review-bg':'#E1F5FE','review-fg':'#0288D1',
+            'done-bg':'#E8F5EE','done-fg':'#2D7A4F',
+          },
+        },
+        maxWidth: { page: '1200px' },
+      },
+    },
+  };
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body {
+    font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+    background:#FFFFFF; color:#333333; font-size:16px; line-height:1.5;
+    -webkit-font-smoothing: antialiased; letter-spacing:-0.01em;
+  }
+  button { font-family: inherit; font-size: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  select.bare {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5L6 6.5L11 1.5' stroke='%23999' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.5; cursor: pointer; }
+</style>
+
+<style type="text/tailwindcss">
+  @layer base {
+    h1 { font-size: 24px; font-weight: 700; line-height: 1.3; margin: 0; }
+    h2 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 0; }
+  }
+</style>
+</head>
+<body class="font-sans">
+
+<div class="min-h-screen flex flex-col bg-white">
+
+  <!-- Header -->
+  <header class="w-full bg-white border-b border-divider">
+    <div class="max-w-page mx-auto h-[72px] px-6 flex items-center justify-between">
+      <a href="./users.html" class="flex items-center gap-3" aria-label="관리자 홈">
+        <img src="../assets/바른케어플러스.png" alt="바른케어플러스" class="h-7 w-auto" />
+        <span class="inline-flex items-center h-[24px] px-[10px] rounded-[8px] bg-primary-bg text-primary text-[12px] font-semibold">관리자</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span id="meAvatar" class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#EEEEEE] text-[14px] font-semibold text-ink-primary">관</span>
+          <span class="text-[14px] text-ink-primary"><strong id="meName" class="font-semibold">관리자</strong> <span class="font-normal text-ink-secondary">님</span></span>
+        </div>
+        <a id="logoutBtn" href="#" class="h-9 px-4 inline-flex items-center rounded-[8px] border border-line text-[14px] text-ink-primary bg-white hover:bg-page transition-colors">로그아웃</a>
+      </div>
+    </div>
+
+    <nav class="border-t border-divider">
+      <ul class="max-w-page mx-auto h-12 px-6 flex items-center justify-center gap-10">
+        <li><a href="./users.html"              class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">TM 관리</a></li>
+        <li><a href="./transmissions.html"       class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">전송내역 관리</a></li>
+        <li><a href="./claim-applications.html"  class="inline-flex items-center h-12 text-[16px] font-semibold text-ink-primary">청구도우미 신청</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 w-full">
+    <div class="max-w-page mx-auto px-6 py-10">
+
+      <section class="max-w-[1200px] mx-auto">
+        <h1 class="text-center text-ink-primary mb-6">청구도우미 신청</h1>
+
+        <!-- Filter Bar -->
+        <div class="bg-field rounded-[8px] px-[24px] py-[24px]">
+          <div class="grid grid-cols-1 md:grid-cols-10 gap-[12px] md:gap-[14px] items-end">
+
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">시작일</label>
+              <input type="date" id="fStart"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">종료일</label>
+              <input type="date" id="fEnd"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">고객명</label>
+              <input id="fName" type="text" placeholder="고객명"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">연락처</label>
+              <input id="fPhone" type="text" placeholder="연락처"
+                     class="h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-[4px] min-w-0">
+              <label class="text-[14px] text-ink-secondary">진행상태</label>
+              <select id="fStatus" class="bare h-[40px] w-full rounded-[8px] bg-white border border-line px-[12px] text-[14px] outline-none focus:border-primary">
+                <option value="">전체</option>
+                <option value="확인전">확인전</option>
+                <option value="확인중">확인중</option>
+                <option value="상담완료">상담완료</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="mt-[16px] flex justify-end">
+            <button id="searchBtn" class="h-[40px] w-[110px] rounded-[8px] bg-[#1A1A1A] hover:bg-black text-white text-[14px] font-medium transition-colors">조회</button>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="mt-8 mb-3 flex items-center justify-between">
+          <p class="text-[16px] text-ink-primary">총 <strong id="totalCount" class="font-semibold">0</strong>건</p>
+          <div class="flex items-center gap-2 text-[14px] text-ink-secondary">
+            <select id="pageSize" class="bare w-[80px] h-9 rounded-[8px] bg-white border border-line pl-3 pr-8 text-[14px] text-ink-primary outline-none focus:border-primary">
+              <option value="15">15</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <span>개씩 보기</span>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="w-full overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-tableHead text-ink-secondary text-[14px] border-b border-[#404040]">
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:200px">고객명</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:220px">연락처</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:240px">신청일시</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:200px">진행상태</th>
+                <th class="h-12 px-4 font-medium whitespace-nowrap text-center" style="width:160px">관리</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav id="pagination" class="mt-8 flex items-center justify-center gap-1" aria-label="pagination"></nav>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-divider bg-white">
+    <div class="max-w-page mx-auto px-6 py-10 flex flex-col items-center gap-2">
+      <p class="text-[14px] text-ink-primary"><span class="font-semibold">Copyright</span> ⓒ 천호인터내셔널</p>
+      <p class="text-[14px] text-ink-tertiary">1644-0161(10:00~17:00) | cs@weplat.co.kr</p>
+    </div>
+  </footer>
+</div>
+
+
+<!-- 상태 수정 모달 -->
+<div id="caModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4 py-6"
+     role="dialog" aria-modal="true" aria-labelledby="caModalTitle">
+  <div class="bg-white rounded-[8px] w-full max-w-[560px] shadow-card relative pt-[36px] pr-[36px] pb-[36px] pl-[36px]">
+    <button id="caModalClose" type="button" aria-label="닫기"
+            class="absolute top-[16px] right-[16px] w-[32px] h-[32px] inline-flex items-center justify-center hover:opacity-70 transition-opacity">
+      <img src="../assets/icn_x.png" alt="닫기" class="w-[18px] h-[18px]" draggable="false" />
+    </button>
+    <h2 id="caModalTitle" class="text-center mb-[24px]">진행상태 변경</h2>
+
+    <form id="caForm" onsubmit="return onCaSubmit(event)">
+      <input type="hidden" id="caId" value="" />
+
+      <div class="border-t border-divider">
+        <div class="flex items-stretch min-h-[52px] border-b border-divider">
+          <div class="w-[140px] bg-field px-[16px] flex items-center text-[14px] text-ink-secondary">고객명</div>
+          <div id="caName" class="flex-1 px-[16px] flex items-center text-[16px] text-ink-primary">—</div>
+        </div>
+        <div class="flex items-stretch min-h-[52px] border-b border-divider">
+          <div class="w-[140px] bg-field px-[16px] flex items-center text-[14px] text-ink-secondary">연락처</div>
+          <div id="caPhone" class="flex-1 px-[16px] flex items-center text-[16px] text-ink-primary">—</div>
+        </div>
+        <div class="flex items-stretch min-h-[52px] border-b border-divider">
+          <div class="w-[140px] bg-field px-[16px] flex items-center text-[14px] text-ink-secondary">신청일시</div>
+          <div id="caAppliedAt" class="flex-1 px-[16px] flex items-center text-[16px] text-ink-primary">—</div>
+        </div>
+        <div class="flex items-stretch min-h-[52px] border-b border-divider">
+          <div class="w-[140px] bg-field px-[16px] flex items-center text-[14px] text-ink-secondary">진행상태</div>
+          <div class="flex-1 px-[12px] flex items-center">
+            <select id="caStatus" class="bare h-[40px] w-[220px] rounded-[8px] bg-white border border-line px-[12px] text-[16px] text-ink-primary outline-none focus:border-primary">
+              <option value="확인전">확인전</option>
+              <option value="확인중">확인중</option>
+              <option value="상담완료">상담완료</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-[24px] flex items-center justify-end gap-[12px]">
+        <button type="button" id="caCancel" class="h-[42px] px-[20px] text-[14px] font-medium text-ink-secondary hover:text-ink-primary transition-colors">취소</button>
+        <button type="submit" class="h-[42px] px-[24px] rounded-[8px] bg-primary text-white text-[14px] font-semibold hover:bg-primary-hover active:bg-primary-press transition-colors">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+/* ============================================================
+   세션 확인 + 헤더 사용자명 반영
+   ============================================================ */
+let ME = null;
+(async () => {
+  try {
+    const res = await fetch('../api/me.php', { credentials: 'same-origin' });
+    if (res.status === 401) { location.href = './login.html'; return; }
+    const data = await res.json();
+    if (!data.ok) { location.href = './login.html'; return; }
+    ME = data.data.user;
+    if (ME.role !== 'admin') { alert('관리자만 접근 가능합니다.'); location.href = '../send.html'; return; }
+    document.getElementById('meName').textContent   = ME.name;
+    document.getElementById('meAvatar').textContent = (ME.name || '관').charAt(0);
+    await render();
+  } catch (_) {
+    location.href = './login.html';
+  }
+})();
+
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  try { await fetch('../api/logout.php', { credentials: 'same-origin' }); } catch (_) {}
+  location.href = './login.html';
+});
+
+/* ============================================================
+   상태 배지 매핑
+   ============================================================ */
+const BADGE_CLASS = {
+  '확인전':  'bg-status-pending-bg text-status-pending-fg',
+  '확인중':  'bg-status-review-bg  text-status-review-fg',
+  '상담완료': 'bg-status-done-bg    text-status-done-fg',
+};
+function badge(label){
+  const cls = BADGE_CLASS[label] || BADGE_CLASS['확인전'];
+  return `<span class="inline-flex items-center justify-center w-[120px] h-[34px] rounded-[8px] text-[14px] font-medium ${cls}">${label}</span>`;
+}
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============================================================
+   상태 & 렌더
+   ============================================================ */
+const state = {
+  applied: { startDate:'', endDate:'', name:'', phone:'', status:'' },
+  page: 1,
+  pageSize: 30,
+  rowsCache: [],
+};
+
+async function fetchPage(){
+  const p = new URLSearchParams({
+    page:      String(state.page),
+    pageSize:  String(state.pageSize),
+    name:      state.applied.name,
+    phone:     state.applied.phone,
+    status:    state.applied.status,
+    startDate: state.applied.startDate,
+    endDate:   state.applied.endDate,
+  });
+  const res = await fetch('../api/admin/claim_applications_list.php?' + p, { credentials: 'same-origin' });
+  if (res.status === 401) { location.href = './login.html'; return null; }
+  if (res.status === 403) { alert('관리자 권한이 필요합니다.'); location.href = '../send.html'; return null; }
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) { alert(data.error || '조회 실패'); return null; }
+  return data.data;
+}
+
+async function render(){
+  const payload = await fetchPage();
+  if (!payload) return;
+
+  const rows = payload.rows || [];
+  const total = payload.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+  if (state.page > totalPages) state.page = totalPages;
+
+  document.getElementById('totalCount').textContent = total;
+  state.rowsCache = rows;
+
+  const $tbody = document.getElementById('tbody');
+  if (rows.length === 0) {
+    $tbody.innerHTML = `<tr><td colspan="5" class="h-24 text-center text-ink-tertiary">데이터가 없습니다.</td></tr>`;
+  } else {
+    $tbody.innerHTML = rows.map(r => `
+      <tr class="border-b border-divider text-[16px] text-ink-primary">
+        <td class="h-14 px-4 whitespace-nowrap text-center">${escapeHtml(r.name)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">${escapeHtml(r.phone)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center text-ink-secondary">${escapeHtml(r.appliedAt)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">${badge(r.status)}</td>
+        <td class="h-14 px-4 whitespace-nowrap text-center">
+          <button type="button" data-action="edit" data-id="${r.id}"
+                  class="h-[32px] px-[14px] rounded-[8px] border border-line text-[13px] text-ink-primary bg-white hover:bg-page transition-colors">상태 변경</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  renderPager(totalPages);
+}
+
+function renderPager(totalPages){
+  const $p = document.getElementById('pagination');
+  if (totalPages <= 1) { $p.innerHTML = ''; return; }
+  const window = 5;
+  let from = Math.max(1, state.page - 2);
+  let to   = Math.min(totalPages, from + window - 1);
+  from = Math.max(1, to - window + 1);
+
+  const pageBtn = (n, label = n, active = false, disabled = false) => `
+    <button type="button" data-go="${n}" ${disabled ? 'disabled' : ''}
+      class="h-9 min-w-9 px-3 rounded-[8px] text-[14px] ${active
+        ? 'bg-ink-primary text-white font-semibold'
+        : disabled ? 'text-ink-tertiary' : 'text-ink-primary hover:bg-page'}">
+      ${label}
+    </button>`;
+
+  let html = '';
+  html += pageBtn(Math.max(1, state.page - 1), '‹', false, state.page === 1);
+  for (let i = from; i <= to; i++) html += pageBtn(i, i, i === state.page);
+  html += pageBtn(Math.min(totalPages, state.page + 1), '›', false, state.page === totalPages);
+  $p.innerHTML = html;
+}
+
+/* ============================================================
+   이벤트 핸들러
+   ============================================================ */
+document.getElementById('searchBtn').addEventListener('click', () => {
+  state.applied = {
+    startDate: document.getElementById('fStart').value,
+    endDate:   document.getElementById('fEnd').value,
+    name:      document.getElementById('fName').value.trim(),
+    phone:     document.getElementById('fPhone').value.trim(),
+    status:    document.getElementById('fStatus').value,
+  };
+  state.page = 1;
+  render();
+});
+
+document.getElementById('pageSize').addEventListener('change', (e) => {
+  state.pageSize = parseInt(e.target.value, 10) || 30;
+  state.page = 1;
+  render();
+});
+
+document.getElementById('pagination').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-go]');
+  if (!btn || btn.disabled) return;
+  state.page = parseInt(btn.dataset.go, 10) || 1;
+  render();
+});
+
+document.getElementById('tbody').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action="edit"]');
+  if (!btn) return;
+  const id = parseInt(btn.dataset.id, 10);
+  const row = state.rowsCache.find(r => Number(r.id) === id);
+  if (!row) return;
+  openModal(row);
+});
+
+/* ============================================================
+   상태 변경 모달
+   ============================================================ */
+const $modal = document.getElementById('caModal');
+function openModal(row){
+  document.getElementById('caId').value         = row.id;
+  document.getElementById('caName').textContent = row.name;
+  document.getElementById('caPhone').textContent= row.phone;
+  document.getElementById('caAppliedAt').textContent = row.appliedAt;
+  document.getElementById('caStatus').value     = row.status;
+  $modal.classList.remove('hidden');
+  $modal.classList.add('flex');
+}
+function closeModal(){
+  $modal.classList.add('hidden');
+  $modal.classList.remove('flex');
+}
+document.getElementById('caModalClose').addEventListener('click', closeModal);
+document.getElementById('caCancel').addEventListener('click', closeModal);
+$modal.addEventListener('click', (e) => { if (e.target === $modal) closeModal(); });
+
+async function onCaSubmit(e){
+  e.preventDefault();
+  const id     = parseInt(document.getElementById('caId').value, 10);
+  const status = document.getElementById('caStatus').value;
+  try {
+    const res = await fetch('../api/admin/claim_applications_update.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!data.ok) throw new Error(data.error || '저장 실패');
+    closeModal();
+    await render();
+  } catch (err) {
+    alert(err.message || '저장 중 오류가 발생했습니다.');
+  }
+  return false;
+}
+</script>
+
+</body>
+</html>

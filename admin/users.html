@@ -79,8 +79,9 @@
 
     <nav class="border-t border-divider">
       <ul class="max-w-page mx-auto h-12 px-6 flex items-center justify-center gap-10">
-        <li><a href="./users.html"        class="inline-flex items-center h-12 text-[16px] font-semibold text-ink-primary">TM 관리</a></li>
-        <li><a href="./transmissions.html" class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">전송내역 관리</a></li>
+        <li><a href="./users.html"              class="inline-flex items-center h-12 text-[16px] font-semibold text-ink-primary">TM 관리</a></li>
+        <li><a href="./transmissions.html"      class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">전송내역 관리</a></li>
+        <li><a href="./claim-applications.html" class="inline-flex items-center h-12 text-[16px] font-normal text-ink-secondary hover:text-ink-primary transition-colors">청구도우미 신청</a></li>
       </ul>
     </nav>
   </header>
@@ -197,16 +198,16 @@ let ME = null;
 (async () => {
   try {
     const res = await fetch('../api/me.php', { credentials: 'same-origin' });
-    if (res.status === 401) { location.href = '../index.html'; return; }
+    if (res.status === 401) { location.href = './login.html'; return; }
     const data = await res.json();
-    if (!data.ok) { location.href = '../index.html'; return; }
+    if (!data.ok) { location.href = './login.html'; return; }
     ME = data.data.user;
     if (ME.role !== 'admin') { alert('관리자만 접근 가능합니다.'); location.href = '../send.html'; return; }
     document.getElementById('meName').textContent   = ME.name;
     document.getElementById('meAvatar').textContent = (ME.name || '관').charAt(0);
     await renderList();
   } catch (_) {
-    location.href = '../index.html';
+    location.href = './login.html';
   }
 })();
 
@@ -216,7 +217,7 @@ let ME = null;
 document.getElementById('logoutBtn').addEventListener('click', async (e) => {
   e.preventDefault();
   try { await fetch('../api/logout.php', { credentials: 'same-origin' }); } catch (_) {}
-  location.href = '../index.html';
+  location.href = './login.html';
 });
 
 /* ============================================================
@@ -231,7 +232,7 @@ function escapeHtml(s){
 
 async function renderList(){
   const res = await fetch('../api/admin/users_list.php', { credentials: 'same-origin' });
-  if (res.status === 401) { location.href = '../index.html'; return; }
+  if (res.status === 401) { location.href = './login.html'; return; }
   if (res.status === 403) { alert('관리자 권한이 필요합니다.'); location.href = '../send.html'; return; }
   const data = await res.json().catch(() => ({}));
   if (!data.ok) { alert(data.error || '목록 조회 실패'); return; }
